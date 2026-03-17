@@ -271,7 +271,8 @@ export default function Home() {
     };
 
     try {
-      const res = await fetch("/predict", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const res = await fetch(`${apiUrl}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submissionData),

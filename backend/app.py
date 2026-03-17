@@ -24,7 +24,12 @@ app = FastAPI(title="FinTech-Approve: Loan Approval Prediction API")
 app.add_middleware(
     CORSMiddleware,
     # Use specific origins for robustness, including common development addresses
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:8000"], 
+    allow_origins=[
+        "http://localhost:3000",      # Development frontend
+        "http://localhost:8000",      # Docker container (local build)
+        "http://127.0.0.1:3000",      # Local development
+        "http://127.0.0.1:8000",      # Local development backend
+    ], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
