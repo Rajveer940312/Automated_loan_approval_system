@@ -275,4 +275,4 @@ Visit: `http://localhost:8000`
 
 ## 📄 License
 
-This project is provided as-is for educational and commercial use.
+This MIT licensed project is provided as-is for educational and commercial use.
