@@ -9,8 +9,8 @@ An intelligent loan approval prediction system using machine learning and explai
 **FinTech-Approve** is an end-to-end automated loan approval system that:
 - Predicts loan approval probability using a trained machine learning model
 - Provides explainable AI insights showing which factors drive the decision
-- Maintains an audit trail of all decisions for compliance
-- Features a modern Next.js frontend with a FastAPI backend
+- Maintains an audit trail of all decisions in a Supabase PostgreSQL database for compliance
+- Features a unified deployment where a FastAPI backend serves a statically exported Next.js frontend
 
 ---
 
@@ -58,12 +58,19 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 source .venv/bin/activate
 ```
 
-#### Step 4: Install Python dependencies
+#### Step 4: Configure Environment Variables
+Create a `.env` file in the `backend/` directory with your Supabase credentials:
+```env
+SUPABASE_URL="your_supabase_project_url"
+SUPABASE_KEY="your_supabase_anon_key"
+```
+
+#### Step 5: Install Python dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-#### Step 5: Start the backend server
+#### Step 6: Start the backend server
 ```bash
 uvicorn app:app --reload
 ```
@@ -111,7 +118,7 @@ Automated_loan_approval_system/
 │   ├── data_prep_and_train.py      # Model training script
 │   ├── check_audit.py              # Audit trail viewer
 │   ├── requirements.txt            # Python dependencies
-│   └── audit.db                    # Decision audit database
+│   └── .env                        # Environment variables (Supabase)
 ├── frontend/
 │   ├── app/
 │   │   ├── page.tsx                # Main application page
@@ -258,7 +265,7 @@ Visit: `http://localhost:8000`
 
 ✨ **Machine Learning Predictions** - Pre-trained decision tree model  
 🔍 **Explainable AI (SHAP)** - Understand why decisions are made  
-📊 **Audit Trail** - SQLite database logs all decisions for compliance  
+📊 **Audit Trail** - Supabase PostgreSQL securely logs all decisions for compliance  
 🔐 **CORS Enabled** - Frontend-backend communication secured  
 📱 **Responsive UI** - Modern Next.js frontend  
 🚀 **Fast API** - FastAPI with automatic documentation
@@ -267,10 +274,10 @@ Visit: `http://localhost:8000`
 
 ## 🛠️ Technology Stack
 
-- **Backend:** FastAPI, scikit-learn, SHAP, SQLite
+- **Backend:** FastAPI, scikit-learn, SHAP
 - **Frontend:** Next.js, TypeScript, React
 - **ML Model:** Random Forest Classifier + Decision Tree
-- **Database:** SQLite (audit logging)
+- **Database:** Supabase PostgreSQL (audit logging)
 - **Deployment:** Docker & Docker Compose
 
 ---
