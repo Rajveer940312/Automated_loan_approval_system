@@ -14,10 +14,12 @@ WORKDIR /app
 COPY backend/requirements.txt ./backend/
 RUN pip install --no-cache-dir -r ./backend/requirements.txt
 
-# Copy backend code and model
-COPY backend/app.py backend/model.joblib ./backend/
-COPY backend/check_audit.py ./backend/
-COPY backend/data_prep_and_train.py ./backend/
+# Copy backend code and dataset to train the model inside the container 
+# This prevents scikit-learn version mismatches and unpickling errors.
+COPY backend/app.py backend/check_audit.py backend/data_prep_and_train.py backend/loan_approval_dataset.csv ./backend/
+
+# Train and generate the model natively inside the container
+RUN cd backend && python data_prep_and_train.py
 
 # Copy built frontend from Stage 1 into the backend's static directory
 COPY --from=frontend-builder /app/frontend/out ./backend/static

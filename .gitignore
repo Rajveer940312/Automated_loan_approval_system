@@ -1,0 +1,16 @@
+# Environment variables
+.env
+backend/.env
+**/.env
+
+# Dependencies
+node_modules/
+.venv/
+env/
+__pycache__/
+
+# Mac
+.DS_Store
+
+# Git
+.git/

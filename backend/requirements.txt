@@ -1,10 +1,11 @@
 fastapi
 uvicorn
 gunicorn
-pandas==2.2.2
-numpy==1.26.4
-scikit-learn==1.4.2
+pandas>=2.2.2
+numpy>=1.26.4
+scikit-learn>=1.4.2
 joblib
-shap==0.44.1
+shap>=0.44.1
 aiofiles
 python-multipart
+supabase>=2.3.0

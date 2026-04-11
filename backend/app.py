@@ -5,9 +5,9 @@ import joblib
 import pandas as pd
 import numpy as np
 import shap 
-import sqlite3 
 import json
 import os
+from supabase import create_client, Client
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
@@ -15,7 +15,15 @@ from fastapi.responses import FileResponse
 MODEL_FILE = "model.joblib"
 # Define the institutional risk policy threshold (50% chance of default or higher is rejection)
 RISK_THRESHOLD = 0.50 
-DATABASE_FILE = "audit.db"
+
+# Initialize Supabase Client
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
 
 # Initialize FastAPI app
 app = FastAPI(title="FinTech-Approve: Loan Approval Prediction API")
@@ -37,52 +45,30 @@ app.add_middleware(
 
 # --- Database Initialization and Logging Functions ---
 
-def init_db():
-    """Initializes the SQLite database and creates the audit table if it doesn't exist."""
-    try:
-        conn = sqlite3.connect(DATABASE_FILE)
-        cursor = conn.cursor()
-        
-        # Table schema to store decision details and XAI reasons
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS loan_audits (
-                timestamp TEXT,
-                loan_approval TEXT,
-                approval_probability REAL,
-                input_data TEXT,           -- Original JSON input data
-                risk_drivers_json TEXT     -- XAI drivers stored as JSON string
-            )
-        """)
-        conn.commit()
-        conn.close()
-        print(f"Database {DATABASE_FILE} initialized successfully.")
-    except sqlite3.Error as e:
-        print(f"Error initializing database: {e}")
-
-# Run initialization once on server startup
-init_db()
-
 def log_audit_entry(input_data: dict, loan_approval: str, proba: float, risk_drivers: list):
-    """Saves a single decision record to the audit table."""
+    """Saves a single decision record to the Supabase Postgres database."""
+    if not supabase:
+        print("Supabase credentials not configured. Skipping audit log.")
+        return
+
     try:
-        conn = sqlite3.connect(DATABASE_FILE)
-        cursor = conn.cursor()
-        
         # Convert complex objects to JSON strings for storage
         input_data_json = json.dumps(input_data)
         risk_drivers_json = json.dumps(risk_drivers)
         
         timestamp = pd.Timestamp.now().isoformat()
         
-        cursor.execute("""
-            INSERT INTO loan_audits (timestamp, loan_approval, approval_probability, input_data, risk_drivers_json)
-            VALUES (?, ?, ?, ?, ?)
-        """, (timestamp, loan_approval, proba, input_data_json, risk_drivers_json))
+        # Insert directly to Supabase via REST
+        response = supabase.table("loan_audits").insert({
+            "timestamp": timestamp,
+            "loan_approval": loan_approval,
+            "approval_probability": proba,
+            "input_data": input_data_json,
+            "risk_drivers_json": risk_drivers_json
+        }).execute()
         
-        conn.commit()
-        conn.close()
-    except sqlite3.Error as e:
-        print(f"Error logging audit entry: {e}")
+    except Exception as e:
+        print(f"Error logging audit entry to Supabase: {e}")
 
 # --- Model Loading and Initialization ---
 try:
@@ -104,30 +90,9 @@ try:
     # Assuming 'numeric_features' is available in model_data (standard practice)
     transformed_feature_names = model_data['numeric_features'] + list(ohe_feature_names)
     
-    # 3. Create a stable background set by transforming the dummy data once
-    # We transform the *dummy* background data used previously to ensure correct SHAP dimensions.
-    background_data_dict = {
-        'no_of_dependents': [0.0], 'education': ['Graduate'], 'self_employed': ['No'],    
-        'income_annum': [0.0], 'loan_amount': [0.0], 'loan_term': [0.0], 
-        'cibil_score': [0.0], 'residential_assets_value': [0.0], 'commercial_assets_value': [0.0], 
-        'luxury_assets_value': [0.0], 'bank_asset_value': [0.0]
-    }
-    background_df_raw = pd.DataFrame(background_data_dict)[features]
-    
-    # We only use the transformed data for the explainer's reference
-    transformed_background = preprocessor.transform(background_df_raw)
-
-    # 4. Define the SHAP prediction function to run ONLY the classifier
-    def classifier_prediction_function(X_transformed):
-        # We need to return the probability for the positive class (index 1)
-        return classifier.predict_proba(X_transformed)[:, 1]
-
-    # 5. Initialize the Explainer
-    # Use the PermutationExplainer, which is more robust for tabular models.
-    explainer = shap.PermutationExplainer(
-        classifier_prediction_function, 
-        transformed_background # Explainer now works on the numpy array output of the preprocessor
-    )
+    # 3. Initialize the Explainer
+    # Use TreeExplainer designed internally for RandomForest models (extremely fast computations)
+    explainer = shap.TreeExplainer(classifier)
     
     print(f"Model and SHAP Explainer loaded successfully. Transformed Features: {len(transformed_feature_names)}")
     
@@ -178,14 +143,27 @@ def predict_loan(data: LoanInput):
     else:
         loan_approval = "Rejected"
 
-    # 2. Calculate Explainable AI (XAI) - SHAP Values (MODIFIED CALL)
-    
     # Transform the single input instance using the fitted preprocessor 
     X_transformed = preprocessor.transform(df) 
     
     # Calculate SHAP values on the transformed input using the specialized explainer
-    # We use the transformed_feature_names to map the results back correctly
-    shap_values = explainer.shap_values(X_transformed)[0] # [0] extracts the result for the single row
+    shap_values_raw = explainer.shap_values(X_transformed)
+    
+    # SHAP output format varies by version and model type (lista/arrays)
+    if isinstance(shap_values_raw, list):
+        # List of arrays [class_0_vals, class_1_vals]
+        shap_values = shap_values_raw[1][0]
+    elif isinstance(shap_values_raw, np.ndarray):
+        if len(shap_values_raw.shape) == 3:
+            # Array shape: (n_samples, n_features, n_classes)
+            shap_values = shap_values_raw[0, :, 1]
+        elif len(shap_values_raw.shape) == 2:
+            # Array shape: (n_samples, n_features)
+            shap_values = shap_values_raw[0]
+        else:
+            shap_values = shap_values_raw[0]
+    else:
+        shap_values = shap_values_raw[0]
     
     # Combine transformed feature names with their SHAP values
     feature_contributions = list(zip(transformed_feature_names, shap_values))
