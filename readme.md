@@ -1,5 +1,7 @@
 # FinTech-Approve: Automated Loan Approval System
 
+**🔴 Live Application:** [https://automated-loan-approval-system-ffdm.onrender.com](https://automated-loan-approval-system-ffdm.onrender.com)
+
 An intelligent loan approval prediction system using machine learning and explainable AI (SHAP) to make data-driven lending decisions.
 
 ## 🚀 Project Overview
