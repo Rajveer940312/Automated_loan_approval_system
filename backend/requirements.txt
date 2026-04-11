@@ -1,9 +1,10 @@
-pandas
-numpy
-scikit-learn==1.7.2
-joblib
 fastapi
 uvicorn
-pydantic
+gunicorn
+pandas
+numpy
+scikit-learn==1.4.2
+joblib
 shap
 aiofiles
+python-multipart

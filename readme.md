@@ -189,7 +189,7 @@ POST /predict
 ![alt text](images/image-4.png)
 
 **Docker Deployment View:**
-<img width="1896" height="1037" alt="image" src="https://github.com/user-attachments/assets/42b6bf93-f55f-4c8d-8611-0400feb5e7be" />
+![alt text](images/Docker.png)
 
 ---
 
