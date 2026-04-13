@@ -94,14 +94,19 @@ for name, model in models.items():
         best_model = pipe
         best_name = name
 
+print("\n✅ Best Model:", best_name)
+print("Best Accuracy:", best_score)
+
+# Final clf
+clf = best_model
 
 clf.fit(X_train, y_train)
 
 preds = clf.predict(X_test)
-print('Accuracy:', accuracy_score(y_test, preds))
-print('\\nClassification Report:\\n', classification_report(y_test, preds))
-print('\\nConfusion Matrix:\\n', confusion_matrix(y_test, preds))
 
+print('Accuracy:', accuracy_score(y_test, preds))
+print('\nClassification Report:\n', classification_report(y_test, preds))
+print('\nConfusion Matrix:\n', confusion_matrix(y_test, preds))
 joblib.dump({
     'pipeline': clf,
     'features': features,
