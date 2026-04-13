@@ -107,10 +107,11 @@ preds = clf.predict(X_test)
 print('Accuracy:', accuracy_score(y_test, preds))
 print('\nClassification Report:\n', classification_report(y_test, preds))
 print('\nConfusion Matrix:\n', confusion_matrix(y_test, preds))
+
 joblib.dump({
     'pipeline': clf,
+    'model_name': best_name,
     'features': features,
     'numeric_features': numeric_features,
     'categorical_features': categorical_features
 }, MODEL_OUT)
-print('Saved model to', MODEL_OUT)
