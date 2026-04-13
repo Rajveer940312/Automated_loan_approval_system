@@ -73,6 +73,26 @@ models = {
     "KNN": KNeighborsClassifier(),
     "SVM": SVC()
 }
+best_model = None
+best_score = 0
+best_name = ""
+
+for name, model in models.items():
+    pipe = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', model)
+    ])
+    
+    pipe.fit(X_train, y_train)
+    preds = pipe.predict(X_test)
+    acc = accuracy_score(y_test, preds)
+    
+    print(f"{name} Accuracy: {acc:.4f}")
+    
+    if acc > best_score:
+        best_score = acc
+        best_model = pipe
+        best_name = name
 
 
 clf.fit(X_train, y_train)
