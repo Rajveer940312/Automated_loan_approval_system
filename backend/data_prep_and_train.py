@@ -58,11 +58,6 @@ preprocessor = ColumnTransformer(transformers=[
     ('cat', cat_transformer, categorical_features)
 ])
 
-# Classifier pipeline
-clf = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('classifier', RandomForestClassifier(n_estimators=200, random_state=RANDOM_STATE))
-])
 
 X = df[features]
 y = df[TARGET].astype(int)
@@ -70,6 +65,15 @@ y = df[TARGET].astype(int)
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y if len(y.unique()) > 1 else None
 )
+# Define models
+models = {
+    "RandomForest": RandomForestClassifier(n_estimators=200, random_state=RANDOM_STATE),
+    "LogisticRegression": LogisticRegression(max_iter=1000),
+    "DecisionTree": DecisionTreeClassifier(random_state=RANDOM_STATE),
+    "KNN": KNeighborsClassifier(),
+    "SVM": SVC()
+}
+
 
 clf.fit(X_train, y_train)
 
