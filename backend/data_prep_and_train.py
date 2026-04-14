@@ -13,7 +13,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import joblib
 
-CSV_PATH = 'loan_approval_dataset.csv'
+CSV_PATH = 'backend\loan_approval_dataset.csv'
 TARGET = 'loan_status'
 MODEL_OUT = 'model.joblib'
 RANDOM_STATE = 42
