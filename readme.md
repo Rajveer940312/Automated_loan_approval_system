@@ -211,6 +211,7 @@ Run this if you want to make changes and see them instantly.
 ```bash
 cd backend
 # Create & activate venv as shown in Prerequisites
+.venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app:app --reload
 ```
