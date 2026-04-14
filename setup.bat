@@ -8,7 +8,8 @@ if /I not "%OS%"=="Windows_NT" (
     echo [ERROR] This installer is for Windows.
     echo [ERROR] Use setup.sh on macOS/Linux.
     popd >nul
-    exit /b 1
+    set "EXIT_CODE=1"
+    goto :manual_close
 )
 
 net session >nul 2>nul
@@ -16,7 +17,8 @@ if errorlevel 1 (
     echo [ERROR] Run this installer as Administrator only.
     echo [INFO] Right-click setup.bat and choose "Run as administrator".
     popd >nul
-    exit /b 1
+    set "EXIT_CODE=1"
+    goto :manual_close
 )
 
 set "MODE="
@@ -99,7 +101,8 @@ echo        3. cd frontend ^&^& npm run dev
 echo [INFO] Docker run:
 echo        docker compose up --build
 popd >nul
-exit /b 0
+set "EXIT_CODE=0"
+goto :manual_close
 
 :help_ok
 echo Usage:
@@ -111,7 +114,8 @@ echo   setup.bat docker
 echo   setup.bat all
 echo   setup.bat all --no-auto-install
 popd >nul
-exit /b 0
+set "EXIT_CODE=0"
+goto :manual_close
 
 :help_error
 echo Usage:
@@ -123,7 +127,15 @@ echo   setup.bat docker
 echo   setup.bat all
 echo   setup.bat all --no-auto-install
 popd >nul
-exit /b 1
+set "EXIT_CODE=1"
+goto :manual_close
+
+:manual_close
+echo.
+echo [INFO] Setup script has finished.
+echo [INFO] Please close this terminal window manually when you are done reviewing the output.
+pause
+exit /b %EXIT_CODE%
 
 :ensure_env_template
 if exist "backend\.env" (
@@ -545,4 +557,5 @@ exit /b 0
 echo.
 echo [FAILED] Setup did not complete.
 popd >nul
-exit /b 1
+set "EXIT_CODE=1"
+goto :manual_close
