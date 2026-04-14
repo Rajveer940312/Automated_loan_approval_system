@@ -14,15 +14,58 @@ An intelligent loan approval prediction system using machine learning and explai
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
-- **Python 3.8+** (with pip)
-- **Node.js 16+** (with npm)
+- **Python 3.10+** (with pip)
+- **Node.js 18+** (with npm)
 - **Windows PowerShell / CMD** or **macOS/Linux Terminal**
 
 ---
 
-## 🔧 Setup & Installation
+## Quick Dependency Installer (Recommended)
+
+Use the setup scripts as an **AIO installer**. They can auto-download and install missing prerequisites from the internet (Python, Node.js, Docker/Compose) using your OS package manager, then continue project setup.
+
+### Which script should you run?
+
+| Your OS | Exact command to run | Best for |
+|---|---|---|
+| Windows (PowerShell/CMD, **Run as Administrator**) | `setup.bat all` | Full one-shot setup (local + Docker) |
+| macOS/Linux | `chmod +x setup.sh && ./setup.sh all` | Full one-shot setup (local + Docker) |
+
+### Windows commands
+```cmd
+setup.bat local
+setup.bat docker
+setup.bat all
+setup.bat all --no-auto-install
+```
+Run `setup.bat` as **Administrator** only.
+If `winget`, `choco`, and `scoop` are all missing, `setup.bat` will attempt to bootstrap Chocolatey and Scoop automatically.
+
+### macOS/Linux commands
+```bash
+chmod +x setup.sh
+./setup.sh local
+./setup.sh docker
+./setup.sh all
+./setup.sh all --no-auto-install
+```
+
+### What each mode does
+
+| Mode | What it does | When to use |
+|---|---|---|
+| `local` | Installs Python venv, backend dependencies, frontend dependencies, and prepares local run | You only want local development |
+| `docker` | Installs/checks Docker + Compose and builds the project image | You only want containerized run |
+| `all` | Runs both `local` and `docker` | Recommended for most users |
+| `--no-auto-install` | Disables internet-based prerequisite installation | Use if Python/Node/Docker are already installed and pinned |
+
+> If `backend/.env` is missing, the scripts create a template automatically.
+
+---
+
+## Setup & Installation (Manual)
 
 ### Backend Setup (Python)
 
