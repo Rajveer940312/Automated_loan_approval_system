@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FinanceChatbot from "./FinanceChatbot";
 
 // =================================================================
 // CUSTOM SELECT COMPONENT (REQUIRED FOR DROPDOWN UI)
@@ -511,6 +512,8 @@ export default function Home() {
 					}
 				`}
       </style>
+
+      <FinanceChatbot />
     </main>
   );
 }
