@@ -37,11 +37,21 @@ app.add_middleware(
         "http://localhost:8000",      # Docker container (local build)
         "http://127.0.0.1:3000",      # Local development
         "http://127.0.0.1:8000",      # Local development backend
+        "https://automated-loan-approval-system-ffdm.onrender.com",  # Production deployment
     ], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 # --- Database Initialization and Logging Functions ---
 

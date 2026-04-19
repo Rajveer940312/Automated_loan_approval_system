@@ -279,7 +279,54 @@ Visit: `http://localhost:8000` (Both frontend and backend)
 
 ---
 
-### 3. Docker in WSL (Windows Users)
+### 3. Run from Docker Hub Image (Pre-built)
+Skip building locally and run the pre-built image directly from Docker Hub.
+
+**Prerequisites:**
+- Docker Desktop installed and running
+- `.env` file in `backend/` directory with your Supabase credentials
+
+**Steps:**
+1. **Pull the image:**
+```bash
+docker pull sudhanshugupta26/automated_loan_approval_system-app:05
+```
+
+2. **Run the container:**
+```bash
+docker run -d --name fintech_app -p 8000:8000 --env-file ./backend/.env sudhanshugupta26/automated_loan_approval_system-app:05
+```
+
+3. **Visit the application:**
+   - Open `http://localhost:8000` in your browser
+
+**Alternative: Using docker-compose with pre-built image**
+Create a `docker-compose.hub.yml` file:
+```yaml
+services:
+  app:
+    image: sudhanshugupta26/automated_loan_approval_system-app:05
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    restart: always
+```
+
+Then run:
+```bash
+docker compose -f docker-compose.hub.yml up -d
+```
+
+**Stop the container:**
+```bash
+docker stop fintech_app
+docker rm fintech_app
+```
+
+---
+
+#### Docker in WSL (Windows Users)
 If you are using **WSL** with **Docker Desktop**:
 
 1. Ensure **Docker Desktop** is running.
@@ -302,6 +349,9 @@ Visit: `http://localhost:8000`
 | Port 3000 already in use | Run: `npm run dev -- -p 3001` |
 | scikit-learn version warnings | Safe to ignore; model still works correctly |
 | SHAP initialization error | Model loads; explanations may be unavailable |
+| Docker error: "unable to get image" or "dockerDesktopLinuxEngine pipe not found" | **Docker Desktop is not running.** On Windows: Open Docker Desktop application from Start Menu or launch it with `& "C:\Program Files\Docker\Docker\Docker Desktop.exe"`. Wait 30-60 seconds for it to fully initialize, then retry `docker compose up`. |
+| Docker build fails with npm errors | Ensure `frontend/package-lock.json` exists. Run `cd frontend && npm install` locally first, then retry `docker compose up --build`. |
+| Docker container exits immediately | Check logs: `docker logs fintech_app`. If model training fails, verify `backend/loan_approval_dataset.csv` exists in the backend folder. |
 
 ---
 

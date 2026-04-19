@@ -12,8 +12,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import joblib
+import os
 
-CSV_PATH = 'backend\loan_approval_dataset.csv'
+CSV_PATH = os.path.join(os.path.dirname(__file__), 'loan_approval_dataset.csv')
 TARGET = 'loan_status'
 MODEL_OUT = 'model.joblib'
 RANDOM_STATE = 42

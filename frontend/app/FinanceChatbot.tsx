@@ -10,7 +10,7 @@ type ChatMessage = {
   content: string;
 };
 
-const GEMINI_API_KEY = "AIzaSyBov3HdZDNqSVG62TDMDG8cu5df-0ymkPo";
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
 const GEMINI_MODEL = "gemini-2.5-flash";
 const FINANCE_SYSTEM_PROMPT =
   "You are FinTech-Approve's official AI assistant for financial and loan guidance. " +
@@ -78,7 +78,7 @@ export default function FinanceChatbot() {
 
       if (!response.ok) {
         if (response.status === 429) {
-           throw new Error("Too many requests (429). Please wait a moment .");
+          throw new Error("Too many requests (429). Please wait a moment .");
         }
         throw new Error(`Request failed with status ${response.status}`);
       }
@@ -122,7 +122,7 @@ export default function FinanceChatbot() {
   const adjustTextareaHeight = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
     // Reset height to allow shrinking
-    e.target.style.height = "44px"; 
+    e.target.style.height = "44px";
     // Set to scrollHeight up to max-height defined in CSS
     e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
   };
@@ -199,22 +199,22 @@ export default function FinanceChatbot() {
                       `}
                     >
                       {isUser ? (
-                         <div className="whitespace-pre-wrap">{message.content}</div>
+                        <div className="whitespace-pre-wrap">{message.content}</div>
                       ) : (
                         <div className="markdown-body">
-                          <ReactMarkdown 
+                          <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
-                              h1: ({node, ...props}) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
-                              h2: ({node, ...props}) => <h2 className="text-lg font-bold mt-4 mb-2" {...props} />,
-                              h3: ({node, ...props}) => <h3 className="text-md font-bold mt-3 mb-1" {...props} />,
-                              p: ({node, ...props}) => <p className="mb-2 last:mb-0 whitespace-pre-wrap" {...props} />,
-                              ul: ({node, ...props}) => <ul className="list-outside list-disc pl-5 mb-3 space-y-1" {...props} />,
-                              ol: ({node, ...props}) => <ol className="list-outside list-decimal pl-5 mb-3 space-y-1" {...props} />,
-                              li: ({node, ...props}) => <li className="pl-1" {...props} />,
-                              strong: ({node, ...props}) => <strong className="font-semibold text-slate-900 dark:text-slate-100" {...props} />,
-                              a: ({node, ...props}) => <a className="text-blue-600 dark:text-blue-400 hover:underline font-medium" {...props} />,
-                              blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-slate-300 dark:border-slate-600 pl-3 my-2 italic text-slate-600 dark:text-slate-400" {...props} />
+                              h1: ({ node, ...props }) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
+                              h2: ({ node, ...props }) => <h2 className="text-lg font-bold mt-4 mb-2" {...props} />,
+                              h3: ({ node, ...props }) => <h3 className="text-md font-bold mt-3 mb-1" {...props} />,
+                              p: ({ node, ...props }) => <p className="mb-2 last:mb-0 whitespace-pre-wrap" {...props} />,
+                              ul: ({ node, ...props }) => <ul className="list-outside list-disc pl-5 mb-3 space-y-1" {...props} />,
+                              ol: ({ node, ...props }) => <ol className="list-outside list-decimal pl-5 mb-3 space-y-1" {...props} />,
+                              li: ({ node, ...props }) => <li className="pl-1" {...props} />,
+                              strong: ({ node, ...props }) => <strong className="font-semibold text-slate-900 dark:text-slate-100" {...props} />,
+                              a: ({ node, ...props }) => <a className="text-blue-600 dark:text-blue-400 hover:underline font-medium" {...props} />,
+                              blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-slate-300 dark:border-slate-600 pl-3 my-2 italic text-slate-600 dark:text-slate-400" {...props} />
                             }}
                           >
                             {message.content}
@@ -267,7 +267,7 @@ export default function FinanceChatbot() {
                 </button>
               </div>
               <div className="text-center mt-3 mb-1">
-                 <span className="text-[12px] font-medium text-slate-400 dark:text-slate-500">Not financial advice. AI can make mistakes.</span>
+                <span className="text-[12px] font-medium text-slate-400 dark:text-slate-500">Not financial advice. AI can make mistakes.</span>
               </div>
             </form>
           </motion.section>
@@ -306,9 +306,9 @@ function CloseIcon() {
 
 function SendIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="translate-x-[2px] translate-y-[-1px]">
-       <path d="m22 2-7 20-4-9-9-4Z" />
-       <path d="M22 2 11 13" />
+    <svg width="20" height="20" viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="translate-x-[2px] translate-y-[-1px]">
+      <path d="m22 2-7 20-4-9-9-4Z" />
+      <path d="M22 2 11 13" />
     </svg>
   );
 }
