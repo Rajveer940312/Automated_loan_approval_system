@@ -58,50 +58,36 @@ const CustomSelect = ({ name, value, placeholder, options, onChange, id }: Custo
         id={id}
         // Conditional class for placeholder color: value is null/empty string
         className={`input flex justify-between items-center cursor-pointer ${value === null || value === "" ? "text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-white"
-          } hover:shadow-md`}
+          }`}
       >
         <span>{displayLabel}</span>
-        <motion.span
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          className="text-gray-500 dark:text-gray-400 ml-2 text-sm"
-        >
+        <span className={`text-gray-500 dark:text-gray-400 ml-2 text-sm transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
           ▼
-        </motion.span>
+        </span>
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.ul
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
-            role="listbox"
-            className="absolute z-10 w-full mt-1 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-60 overflow-y-auto"
-            style={{
-              backgroundColor: 'var(--input-bg, #ffffff)',
-              color: 'var(--input-text, #1f2937)'
-            }}
-          >
-            {options.map((option) => (
-              <li
-                key={option.value}
-                onClick={() => handleSelect(option.value)}
-                role="option"
-                // FIX: Pass boolean directly. React handles the string conversion for ARIA attributes.
-                aria-selected={option.value === value}
-                className={`px-4 py-2 cursor-pointer transition-colors duration-100 last:rounded-b-xl first:rounded-t-xl ${option.value === value
-                  ? 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 font-semibold'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-              >
-                {option.label}
-              </li>
-            ))}
-          </motion.ul>
-        )}
-      </AnimatePresence>
+      {isOpen && (
+        <ul
+          role="listbox"
+          className="absolute z-10 w-full mt-1 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 max-h-60 overflow-y-auto bg-white dark:bg-gray-800"
+        >
+          {options.map((option) => (
+            <li
+              key={option.value}
+              onClick={() => handleSelect(option.value)}
+              role="option"
+              // FIX: Pass boolean directly. React handles the string conversion for ARIA attributes.
+              aria-selected={option.value === value}
+              className={`px-4 py-2 cursor-pointer transition-colors duration-100 last:rounded-b-lg first:rounded-t-lg ${option.value === value
+                ? 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 font-semibold'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+            >
+              {option.label}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
@@ -159,6 +145,7 @@ export default function Home() {
   // UPDATED: Use the new PredictResult type
   const [result, setResult] = useState<PredictResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
 
   // Options data for the custom dropdowns
   const educationOptions: Option[] = [
@@ -170,6 +157,58 @@ export default function Home() {
     { value: "Yes", label: "Yes" },
     { value: "No", label: "No" },
   ];
+
+  // Validation functions for each step
+  const isStep1Valid = (): boolean => {
+    return (
+      form.no_of_dependents !== null &&
+      form.education !== "" &&
+      form.self_employed !== "" &&
+      form.cibil_score !== null
+    );
+  };
+
+  const isStep2Valid = (): boolean => {
+    return (
+      form.income_annum !== null &&
+      form.loan_amount !== null &&
+      form.loan_term !== null
+    );
+  };
+
+  const isStep3Valid = (): boolean => {
+    return (
+      form.residential_assets_value !== null &&
+      form.commercial_assets_value !== null &&
+      form.luxury_assets_value !== null &&
+      form.bank_asset_value !== null
+    );
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1 && isStep1Valid()) {
+      setCurrentStep(2);
+      return;
+    }
+
+    if (currentStep === 2 && isStep2Valid()) {
+      setCurrentStep(3);
+      return;
+    }
+
+    if (currentStep === 3 && isStep3Valid()) {
+      setCurrentStep(4);
+      return;
+    }
+
+    alert("Please fill out all fields in this section.");
+  };
+
+  const handlePreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep((prev) => (prev - 1) as 1 | 2 | 3 | 4);
+    }
+  };
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | { target: { name: string; value: string | number | null } }) => {
@@ -297,145 +336,337 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-blue-200 dark:from-gray-900 dark:to-gray-800 px-5 py-10 transition-colors">
+    <main className="flex flex-col items-center bg-gray-50 dark:bg-gray-900 px-5 py-10 transition-colors min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl bg-white dark:bg-gray-800 shadow-2xl rounded-3xl p-8 border border-gray-100 dark:border-gray-700 transition-colors"
+        className="w-full max-w-3xl bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 border border-gray-200 dark:border-gray-700 transition-all duration-300"
       >
-        <h1 className="text-4xl font-extrabold text-center mb-2 text-blue-800 dark:text-blue-400 tracking-tight">
+        <h1 className="text-3xl font-bold text-center mb-2 text-blue-800 dark:text-blue-500">
           FinTech-Approve
         </h1>
-        <p className="text-center text-gray-500 dark:text-gray-300 mb-8">
+        <p className="text-center text-white-900 dark:text-white-900 mb-8">
           Fill in your financial details to check your loan approval chances.
         </p>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Applicant Info */}
-          <h2 className="col-span-full text-lg font-semibold text-gray-700 dark:text-gray-200 border-b pb-1 mb-2 text-center">
-            👤 Applicant Information
-          </h2>
-
-          {/* Dependents Field */}
-          <div className="flex flex-col">
-            <label htmlFor="dependents" className="label">Number of Dependents</label>
-            <input
-              id="dependents"
-              name="no_of_dependents"
-              type="number"
-              placeholder="e.g., 2"
-              value={form.no_of_dependents ?? ''} // Use nullish coalescing for display
-              onChange={handleChange}
-              min={0}
-              className="input"
-            />
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-5">
+          <div className="col-span-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 p-5 shadow-lg transition duration-300">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-wide text-white-900 dark:text-white-900">Progress</p>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Loan approval journey</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4].map((step) => (
+                  <div
+                    key={step}
+                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${currentStep === step
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600'
+                      }`}
+                  >
+                    Step {step}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+              <div
+                className="h-full rounded-full bg-blue-600 transition-all duration-500"
+                style={{ width: `${(currentStep / 4) * 100}%` }}
+              />
+            </div>
           </div>
 
-          {/* Education dropdown */}
-          <div className="flex flex-col">
-            <label htmlFor="education" className="label">Education Level</label>
-            <CustomSelect
-              id="education"
-              name="education"
-              value={form.education}
-              placeholder="Select Education"
-              options={educationOptions}
-              onChange={handleChange}
-            />
-          </div>
+          {/* STEP 1: Applicant Information */}
+          {currentStep === 1 && (
+            <div className="col-span-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-8 shadow-lg transition duration-300">
+              <div className="mb-6 flex flex-col gap-2">
+                <p className="text-sm uppercase tracking-wide font-bold text-blue-600 dark:text-blue-500">Step 1 of 4</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Applicant Information</h3>
+                <p className="max-w-2xl text-white-900 dark:text-white-900">Tell us about the borrower profile so we can personalize the approval estimate.</p>
+              </div>
 
-          {/* Self Employed dropdown */}
-          <div className="flex flex-col">
-            <label htmlFor="self_employed" className="label">Self Employed Status</label>
-            <CustomSelect
-              id="self_employed"
-              name="self_employed"
-              value={form.self_employed}
-              placeholder="Are you self-employed?"
-              options={selfEmployedOptions}
-              onChange={handleChange}
-            />
-          </div>
+              <div className="grid grid-cols-1 gap-5">
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="dependents" className="label">Number of Dependents</label>
+                  <input
+                    id="dependents"
+                    name="no_of_dependents"
+                    type="number"
+                    placeholder="e.g., 2"
+                    value={form.no_of_dependents ?? ''}
+                    onChange={handleChange}
+                    min={0}
+                    className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200"
+                  />
+                </div>
 
-          {/* CIBIL Score Field */}
-          <div className="flex flex-col">
-            <label htmlFor="cibil_score" className="label">CIBIL Score</label>
-            <input
-              id="cibil_score"
-              name="cibil_score"
-              type="number"
-              placeholder="e.g., 750 (300-900)"
-              value={form.cibil_score ?? ''}
-              onChange={handleChange}
-              min={0}
-              max={900} // Added max for score guidance
-              className="input"
-            />
-          </div>
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="education" className="label">Education Level</label>
+                  <CustomSelect
+                    id="education"
+                    name="education"
+                    value={form.education}
+                    placeholder="Select Education"
+                    options={educationOptions}
+                    onChange={handleChange}
+                  />
+                </div>
 
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="self_employed" className="label">Self Employed Status</label>
+                  <CustomSelect
+                    id="self_employed"
+                    name="self_employed"
+                    value={form.self_employed}
+                    placeholder="Are you self-employed?"
+                    options={selfEmployedOptions}
+                    onChange={handleChange}
+                  />
+                </div>
 
-          {/* Financial Info */}
-          <h2 className="col-span-full text-lg font-semibold text-gray-700 dark:text-gray-200 border-b pb-1 mt-4 mb-2 text-center">
-            💰 Financial Details
-          </h2>
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="cibil_score" className="label">CIBIL Score</label>
+                  <input
+                    id="cibil_score"
+                    name="cibil_score"
+                    type="number"
+                    placeholder="e.g., 750 (300-900)"
+                    value={form.cibil_score ?? ''}
+                    onChange={handleChange}
+                    min={0}
+                    max={900}
+                    className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200"
+                  />
+                </div>
+              </div>
 
-          {/* Annual Income Field */}
-          <div className="flex flex-col">
-            <label htmlFor="income_annum" className="label">Annual Income (₹)</label>
-            <input id="income_annum" name="income_annum" type="number" placeholder="e.g., 4000000" value={form.income_annum ?? ''} onChange={handleChange} min={0} className="input" />
-          </div>
+              <div className="mt-8 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-7 py-3 text-base font-semibold text-white shadow-sm transition duration-300 hover:bg-blue-700"
+                >
+                  Continue to Financials
+                </button>
+              </div>
+            </div>
+          )}
 
-          {/* Loan Amount Field */}
-          <div className="flex flex-col">
-            <label htmlFor="loan_amount" className="label">Requested Loan Amount (₹)</label>
-            <input id="loan_amount" name="loan_amount" type="number" placeholder="e.g., 15000000" value={form.loan_amount ?? ''} onChange={handleChange} min={0} className="input" />
-          </div>
+          {/* STEP 2: Financial Details */}
+          {currentStep === 2 && (
+            <div className="col-span-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-8 shadow-lg transition duration-300">
+              <div className="mb-6 flex flex-col gap-2">
+                <p className="text-sm uppercase tracking-wide text-blue-600 font-bold dark:text-blue-400">Step 2 of 4</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Financial Details</h3>
+                <p className="max-w-2xl text-white-900 dark:text-white-900">Add your income and loan request details so we can estimate your approval likelihood.</p>
+              </div>
 
-          {/* Loan Term Field */}
-          <div className="flex flex-col">
-            <label htmlFor="loan_term" className="label">Loan Term (Years)</label>
-            <input id="loan_term" name="loan_term" type="number" placeholder="e.g., 15" value={form.loan_term ?? ''} onChange={handleChange} min={0} className="input" />
-          </div>
+              <div className="grid grid-cols-1 gap-5">
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="income_annum" className="label">Annual Income (₹)</label>
+                  <input id="income_annum" name="income_annum" type="number" placeholder="e.g., 4000000" value={form.income_annum ?? ''} onChange={handleChange} min={0} className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" />
+                </div>
 
-          <span className="col-span-full"></span> {/* Empty span to balance the grid if needed */}
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="loan_amount" className="label">Requested Loan Amount (₹)</label>
+                  <input id="loan_amount" name="loan_amount" type="number" placeholder="e.g., 15000000" value={form.loan_amount ?? ''} onChange={handleChange} min={0} className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" />
+                </div>
 
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="loan_term" className="label">Loan Term (Years)</label>
+                  <input id="loan_term" name="loan_term" type="number" placeholder="e.g., 15" value={form.loan_term ?? ''} onChange={handleChange} min={0} className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" />
+                </div>
+              </div>
 
-          {/* Assets */}
-          <h2 className="col-span-full text-lg font-semibold text-gray-700 dark:text-gray-200 border-b pb-1 mt-4 mb-2 text-center">
-            🏠 Assets Information
-          </h2>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={handlePreviousStep}
+                  className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-base font-semibold text-gray-700 shadow-sm transition duration-300 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-7 py-3 text-base font-semibold text-white shadow-sm transition duration-300 hover:bg-blue-700"
+                >
+                  Continue to Assets
+                </button>
+              </div>
+            </div>
+          )}
 
-          {/* Residential Assets Field */}
-          <div className="flex flex-col">
-            <label htmlFor="residential_assets_value" className="label">Residential Assets Value (₹)</label>
-            <input id="residential_assets_value" name="residential_assets_value" type="number" placeholder="e.g., 5000000" value={form.residential_assets_value ?? ''} onChange={handleChange} min={0} className="input" />
-          </div>
+          {/* STEP 3: Assets Information */}
+          {currentStep === 3 && (
+            <div className="col-span-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-8 shadow-lg transition duration-300">
+              <div className="mb-6 flex flex-col gap-2">
+                <p className="text-sm uppercase tracking-wide text-blue-600 font-bold dark:text-blue-400">Step 3 of 4</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Assets Information</h3>
+                <p className="max-w-2xl text-white-900 dark:text-white-900">Share your asset profile to complete the loan recommendation process.</p>
+              </div>
 
-          {/* Commercial Assets Field */}
-          <div className="flex flex-col">
-            <label htmlFor="commercial_assets_value" className="label">Commercial Assets Value (₹)</label>
-            <input id="commercial_assets_value" name="commercial_assets_value" type="number" placeholder="e.g., 1000000" value={form.commercial_assets_value ?? ''} onChange={handleChange} min={0} className="input" />
-          </div>
+              <div className="grid grid-cols-1 gap-5">
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="residential_assets_value" className="label">Residential Assets Value (₹)</label>
+                  <input id="residential_assets_value" name="residential_assets_value" type="number" placeholder="e.g., 5000000" value={form.residential_assets_value ?? ''} onChange={handleChange} min={0} className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" />
+                </div>
 
-          {/* Luxury Assets Field */}
-          <div className="flex flex-col">
-            <label htmlFor="luxury_assets_value" className="label">Luxury Assets Value (₹)</label>
-            <input id="luxury_assets_value" name="luxury_assets_value" type="number" placeholder="e.g., 2000000" value={form.luxury_assets_value ?? ''} onChange={handleChange} min={0} className="input" />
-          </div>
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="commercial_assets_value" className="label">Commercial Assets Value (₹)</label>
+                  <input id="commercial_assets_value" name="commercial_assets_value" type="number" placeholder="e.g., 1000000" value={form.commercial_assets_value ?? ''} onChange={handleChange} min={0} className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" />
+                </div>
 
-          {/* Bank Assets Field */}
-          <div className="flex flex-col">
-            <label htmlFor="bank_asset_value" className="label">Bank Balance (₹)</label>
-            <input id="bank_asset_value" name="bank_asset_value" type="number" placeholder="e.g., 500000" value={form.bank_asset_value ?? ''} onChange={handleChange} min={0} className="input" />
-          </div>
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="luxury_assets_value" className="label">Luxury Assets Value (₹)</label>
+                  <input id="luxury_assets_value" name="luxury_assets_value" type="number" placeholder="e.g., 2000000" value={form.luxury_assets_value ?? ''} onChange={handleChange} min={0} className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" />
+                </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="col-span-full mt-6 bg-blue-600 dark:bg-blue-500 text-white font-semibold py-3 rounded-xl shadow hover:bg-blue-700 dark:hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Analyzing..." : "Predict Loan Approval"}
-          </button>
+                <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-200 focus-within:border-blue-500">
+                  <label htmlFor="bank_asset_value" className="label">Bank Balance (₹)</label>
+                  <input id="bank_asset_value" name="bank_asset_value" type="number" placeholder="e.g., 500000" value={form.bank_asset_value ?? ''} onChange={handleChange} min={0} className="input focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" />
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={handlePreviousStep}
+                  className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-base font-semibold text-gray-700 shadow-sm transition duration-300 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-7 py-3 text-base font-semibold text-white shadow-sm transition duration-300 hover:bg-blue-700"
+                >
+                  Continue to Summary
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: Review Summary */}
+          {currentStep === 4 && (
+            <div className="col-span-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-8 shadow-lg transition duration-300">
+              <div className="mb-6 flex flex-col gap-2">
+                <p className="text-sm uppercase tracking-wide text-blue-600 font-bold dark:text-blue-400">Step 4 of 4</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Review your application</h3>
+                <p className="max-w-2xl text-white-900 dark:text-white-900">Confirm the details below before submitting your loan request.</p>
+              </div>
+
+              <div className="grid gap-4">
+                <div className="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold uppercase tracking-wide text-white-500 dark:text-white-400">Applicant</p>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(1)}
+                      className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition duration-300 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+                    >
+                      Edit section
+                    </button>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Dependents</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{form.no_of_dependents}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Education</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{form.education}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Self Employed</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{form.self_employed}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">CIBIL Score</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{form.cibil_score}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold uppercase tracking-wide text-white-500 dark:text-white-400">Financial details</p>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(2)}
+                      className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition duration-300 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+                    >
+                      Edit section
+                    </button>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Annual Income</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">₹{form.income_annum}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Loan Amount</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">₹{form.loan_amount}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Loan Term</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{form.loan_term} years</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-5 shadow-md transition duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold uppercase tracking-wide text-white-500 dark:text-white-400">Assets</p>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(3)}
+                      className="rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition duration-300 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+                    >
+                      Edit section
+                    </button>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Residential</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">₹{form.residential_assets_value}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Commercial</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">₹{form.commercial_assets_value}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Luxury</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">₹{form.luxury_assets_value}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-800 dark:text-white">Bank Balance</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">₹{form.bank_asset_value}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={handlePreviousStep}
+                  className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-base font-semibold text-gray-700 shadow-sm transition duration-300 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-7 py-3 text-base font-semibold text-white shadow-sm transition duration-300 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Analyzing..." : "Submit & Predict"}
+                </button>
+              </div>
+            </div>
+          )}
         </form>
 
         <AnimatePresence>
@@ -444,7 +675,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className={`mt-8 text-center rounded-2xl p-6 font-semibold ${result.loan_approval === "Approved"
+              className={`mt-8 text-center rounded-lg p-6 font-semibold shadow-xl ${result.loan_approval === "Approved"
                 ? "bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300"
                 : "bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300"
                 }`}
@@ -512,7 +743,6 @@ export default function Home() {
 					}
 				`}
       </style>
-
       <FinanceChatbot />
     </main>
   );
